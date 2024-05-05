@@ -1,13 +1,13 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using System.Threading.Tasks;
 
 namespace SignalR.SignalR
 {
-    public class MessageHub:Hub
+    public class MessageHub : Hub
     {
-        public async Task SendName(string name)
+        public async Task SendAsync(string message)
         {
-            await Clients.All.SendAsync("Name : " + name);
+            await Clients.All.SendAsync("Name", message);
         }
-
     }
 }

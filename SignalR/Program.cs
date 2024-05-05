@@ -1,64 +1,62 @@
+ï»¿using Microsoft.AspNetCore.SignalR;
 using SignalR.SignalR;
 
-namespace SignalR
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+
+builder.Services.AddControllers();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+//Signal R KullanacaÃ°Ã½z
+builder.Services.AddSignalR();
+//builder.Services.AddSingleton<IHubContext<MessageHub>, HubContext<MessageHub>>();
+
+// Cors ekleyelim
+builder.Services.AddCors(options =>
 {
-    public class Program
+    options.AddPolicy("Cors", builder =>
     {
-        public static void Main(string[] args)
-        {
-            var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+        builder.WithOrigins("http://localhost:5184").
+        AllowAnyHeader().
+        AllowAnyMethod().
+        AllowCredentials();
 
-            builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+    });
+});
 
-            builder.Services.AddSignalR();
-            builder.Services.AddCors();
+var app = builder.Build();
 
-            builder.Services.AddCors(options =>
-            {
-                options.AddPolicy("Cors", builder =>
-                {
-                    builder.WithOrigins("http://localhost/1010","http://localhost/2020").
-                    AllowAnyHeader().
-                    AllowAnyMethod().
-                    AllowAnyMethod();
-
-                });
-            });
-
-            var app = builder.Build();
-
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
-
-            app.UseHttpsRedirection();
-
-            app.UseAuthorization();
+app.Services.GetService(typeof(Microsoft.AspNet.SignalR.IHubContext<MessageHub>));
 
 
-            app.MapControllers();
+// DÃ½Ã¾arÃ½dan gelen paketler http//localhost:5050/wissen
+// Signal R'in aynÃ½ web socketteki gibi hizmet vereceÃ°i bir adres olacaktÃ½r. Bu adresi Aspnet Core uygulamasÃ½na Register etmek iÃ§in bir endpoint ekliyoruz.
 
-
-            
-
-            // Signal R' ýn ayný web socketteki gibi bir hizmet vereceði adres olacaktýr. bu adresi aspnet core uygulamasýndaki gibi bir endpoint eklememiz gerekiyor
-            app.UseEndpoints(endpoints =>
-            {
-                // Dýþarýdan gelen paketler http://localhost:5050/wissen
-                endpoints.MapHub<MessageHub>("/wissen");
-            });
-
-            app.UseCors("cors");
-
-            app.Run();
-        }
-    }
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
+
+app.UseAuthorization();
+
+//app.MapControllers();
+
+
+app.UseCors("Cors");
+
+
+app.UseRouting();
+
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapHub<MessageHub>("/wissen");
+    endpoints.MapControllers();
+});
+
+app.Run();
